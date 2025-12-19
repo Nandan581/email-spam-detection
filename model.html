@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Model Info</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dark">
+
+<div class="app">
+    <aside class="sidebar">
+        <h2>🛡 SpamGuard</h2>
+        <ul>
+            <li><a href="/dashboard">📧 Spam Analyzer</a></li>
+            <li><a href="/logs">📊 Detection Logs</a></li>
+            <li class="active"><a href="/model">🧠 Model Info</a></li>
+            <li><a href="/settings">⚙ Settings</a></li>
+        </ul>
+        <a class="logout" href="/logout">🚪 Logout</a>
+    </aside>
+
+    <main class="main">
+        <h1>🧠 Model Information</h1>
+
+        <div class="card">
+            <ul>
+                <li><b>Model Type:</b> Naive Bayes (Simulated)</li>
+                <li><b>Vectorization:</b> TF-IDF</li>
+                <li><b>Training Dataset:</b> 5,000 labeled emails</li>
+                <li><b>Accuracy:</b> ~96%</li>
+                <li><b>Purpose:</b> Academic demonstration</li>
+            </ul>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

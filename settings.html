@@ -1,0 +1,97 @@
+from flask import Flask, render_template, request, redirect, session
+from datetime import datetime
+
+app = Flask(__name__)
+app.secret_key = "supersecretkey"
+
+# Login credentials
+USER = "admin"
+PASS = "admin123"
+
+# Store detection logs
+logs = []
+
+# Simple spam keywords (used as probability contributors)
+SPAM_KEYWORDS = [
+    "urgent", "verify", "bank", "account", "password", "otp",
+    "click", "winner", "free", "money", "prize", "lottery",
+    "limited time", "act now", "confirm", "suspended"
+]
+
+@app.route("/", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        if request.form["username"] == USER and request.form["password"] == PASS:
+            session["user"] = USER
+            return redirect("/dashboard")
+        return render_template("login.html", error="Invalid credentials")
+    return render_template("login.html")
+
+@app.route("/dashboard", methods=["GET", "POST"])
+def dashboard():
+    if "user" not in session:
+        return redirect("/")
+
+    result = None
+    probability = None
+    reasons = []
+
+    if request.method == "POST":
+        email_text = request.form["email"].lower()
+
+        # Count spam keyword matches
+        match_count = 0
+        for word in SPAM_KEYWORDS:
+            if word in email_text:
+                match_count += 1
+                reasons.append(f"Contains spam-related keyword: '{word}'")
+
+        # Probability calculation
+        probability = min(99, 10 + match_count * 12)
+
+        # Classification
+        if probability >= 50:
+            result = "SPAM 🚨"
+        else:
+            result = "NOT SPAM ✅"
+            reasons = ["No strong spam indicators found in the email content"]
+
+        # Save logs
+        logs.append({
+            "time": datetime.now().strftime("%d %b %Y %H:%M"),
+            "result": result,
+            "prob": probability
+        })
+
+    return render_template(
+        "dashboard.html",
+        result=result,
+        probability=probability,
+        reasons=reasons
+    )
+
+@app.route("/logs")
+def detection_logs():
+    if "user" not in session:
+        return redirect("/")
+    return render_template("logs.html", logs=logs)
+
+@app.route("/model")
+def model_info():
+    if "user" not in session:
+        return redirect("/")
+    return render_template("model.html")
+
+@app.route("/settings")
+def settings():
+    if "user" not in session:
+        return redirect("/")
+    return render_template("settings.html")
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
+if __name__ == "__main__":
+    app.run(debug=True)

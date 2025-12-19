@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Email Spam Detector</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dark">
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <h2>🛡 SpamGuard</h2>
+        <p class="user">Logged in as <b>admin</b></p>
+
+    <ul>
+    {% for reason in reasons %}
+    <li>{{ reason }}</li>
+    {% endfor %}
+    </ul>
+
+        <a class="logout" href="/logout">🚪 Logout</a>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main">
+
+        <!-- HEADER -->
+        <header class="header">
+            <h1>Email Spam Detection System</h1>
+            <p>Machine Learning based email text classification</p>
+        </header>
+
+        <!-- ANALYZE CARD -->
+        <section class="card">
+            <h3>✉ Analyze Email Content</h3>
+            <p class="muted">
+                Paste the complete email message below to determine whether it is spam.
+            </p>
+
+            <form method="POST">
+                <textarea name="email" placeholder="Paste the content of an email here..." required></textarea>
+                <button type="submit">Analyze Email</button>
+            </form>
+        </section>
+
+        <!-- RESULT CARD -->
+        {% if result %}
+        <section class="card result-card">
+            <h3>🔍 Detection Result</h3>
+
+            <h2 class="{{ 'spam' if 'SPAM' in result else 'safe' }}">
+                {{ result }}
+            </h2>
+
+            <p>Spam Probability: <b>{{ probability }}%</b></p>
+
+            <div class="explain">
+                <h4>Why this email was flagged:</h4>
+                <ul>
+                    <li>Urgent or threatening language detected</li>
+                    <li>Requests sensitive personal or banking details</li>
+                    <li>Matches known spam keyword patterns</li>
+                </ul>
+            </div>
+        </section>
+        {% endif %}
+
+    </main>
+</div>
+
+</body>
+</html>

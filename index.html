@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Email Spam Detector</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+<div class="app">
+    <header class="header">
+        <div class="title-block">
+            <h1>Email Spam Detector</h1>
+            <p>Paste any email text and instantly see if it looks like spam.</p>
+        </div>
+        <div class="tag">Python • ML • Live</div>
+    </header>
+
+    <main class="main">
+        <!-- INPUT CARD -->
+        <section class="card">
+            <form id="email-form" class="email-form">
+                <label for="email-text">Email body</label>
+                <textarea
+                    id="email-text"
+                    name="email-text"
+                    rows="8"
+                    placeholder="Paste the content of an email here..."
+                    required
+                ></textarea>
+                <div class="actions">
+                    <button type="submit">Analyze</button>
+                    <span class="hint">
+                        Example spam line: "Congratulations, you have won a free iPhone!"
+                    </span>
+                </div>
+            </form>
+        </section>
+
+        <!-- RESULT CARD -->
+        <section class="card">
+            <div id="status" class="status idle">
+                <span id="status-text">Waiting for input…</span>
+            </div>
+
+            <div id="loader" class="loader hidden">
+                <div class="spinner"></div>
+                <span>Analyzing email…</span>
+            </div>
+
+            <div id="error-box" class="message error hidden"></div>
+
+            <div id="result-box" class="result-box hidden">
+                <div class="result-header">
+                    <span class="result-label" id="result-label">—</span>
+                    <span class="result-score-label">Spam probability</span>
+                </div>
+
+                <div class="bar-wrapper">
+                    <div class="bar-bg">
+                        <div class="bar-fill" id="bar-fill"></div>
+                    </div>
+                    <span class="bar-percent" id="bar-percent">0%</span>
+                </div>
+
+                <p class="note">
+                    This is a simple demo model trained on a small dataset. It shows the concept of spam detection.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <span>Built with Flask + scikit-learn</span>
+        <span class="dot"></span>
+        <span>Dark mode • Minimal • Functional</span>
+    </footer>
+</div>
+
+<script>
+    const form = document.getElementById("email-form");
+    const emailText = document.getElementById("email-text");
+    const loader = document.getElementById("loader");
+    const errorBox = document.getElementById("error-box");
+    const resultBox = document.getElementById("result-box");
+    const resultLabel = document.getElementById("result-label");
+    const barFill = document.getElementById("bar-fill");
+    const barPercent = document.getElementById("bar-percent");
+    const statusBox = document.getElementById("status");
+    const statusText = document.getElementById("status-text");
+
+    function showLoader(show) {
+        if (show) loader.classList.remove("hidden");
+        else loader.classList.add("hidden");
+    }
+
+    function setStatus(text, state) {
+        statusText.textContent = text;
+        statusBox.className = "status " + (state || "idle");
+    }
+
+    function showError(message) {
+        if (!message) {
+            errorBox.classList.add("hidden");
+            errorBox.textContent = "";
+            return;
+        }
+        errorBox.textContent = message;
+        errorBox.classList.remove("hidden");
+    }
+
+    function showResult(label, probability) {
+        resultBox.classList.remove("hidden");
+        resultLabel.textContent = label;
+
+        const percent = Math.round(probability * 100);
+        barFill.style.width = percent + "%";
+        barPercent.textContent = percent + "%";
+
+        if (label === "Spam") {
+            resultLabel.className = "result-label spam";
+        } else {
+            resultLabel.className = "result-label ham";
+        }
+    }
+
+    form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const text = emailText.value.trim();
+
+        if (!text) {
+            showError("Please paste an email body to analyze.");
+            return;
+        }
+
+        showError("");
+        resultBox.classList.add("hidden");
+        showLoader(true);
+        setStatus("Analyzing email…", "running");
+
+        try {
+            const response = await fetch("/predict", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ text: text }),
+            });
+
+            const data = await response.json();
+            showLoader(false);
+
+            if (!response.ok || data.error) {
+                const msg = data.error || "Unknown error.";
+                showError(msg);
+                setStatus("Analysis failed.", "error");
+                return;
+            }
+
+            showResult(data.label, data.spam_probability);
+            setStatus("Analysis complete.", "success");
+        } catch (err) {
+            showLoader(false);
+            showError("Network error: " + err);
+            setStatus("Network error during analysis.", "error");
+        }
+    });
+</script>
+</body>
+</html>

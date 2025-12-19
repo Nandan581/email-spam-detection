@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Detection Logs</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="dark">
+
+<div class="app">
+    <aside class="sidebar">
+        <h2>🛡 SpamGuard</h2>
+        <ul>
+            <li><a href="/dashboard">📧 Spam Analyzer</a></li>
+            <li class="active"><a href="/logs">📊 Detection Logs</a></li>
+            <li><a href="/model">🧠 Model Info</a></li>
+            <li><a href="/settings">⚙ Settings</a></li>
+        </ul>
+        <a class="logout" href="/logout">🚪 Logout</a>
+    </aside>
+
+    <main class="main">
+        <h1>📊 Detection Logs</h1>
+        <p class="muted">Recent spam detection activity</p>
+
+        <div class="card">
+            {% if logs %}
+            <ul>
+                {% for log in logs %}
+                <li>{{ log.time }} — <b>{{ log.result }}</b> ({{ log.prob }}%)</li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>No detections yet.</p>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+</body>
+</html>
